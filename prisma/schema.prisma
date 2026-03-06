@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EmployeeRole {
+  CASHIER
+  MANAGER
+  ADMIN
+}
+
+enum PaymentType {
+  CASH
+  CARD
+  MOBILE
+}
+
+model Employee {
+  id        Int          @id @default(autoincrement())
+  name      String
+  role      EmployeeRole
+  shifts    Shift[]
+  sales     Sale[]
+  createdAt DateTime     @default(now())
+}
+
+model Shift {
+  id         Int       @id @default(autoincrement())
+  employee   Employee  @relation(fields: [employeeId], references: [id])
+  employeeId Int
+  startTime  DateTime
+  endTime    DateTime?
+  sales      Sale[]
+}
+
+model ProductCategory {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  products  Product[]
+}
+
+model Product {
+  id          Int             @id @default(autoincrement())
+  name        String
+  sku         String          @unique
+  price       Float
+  stock       Int
+  category    ProductCategory @relation(fields: [categoryId], references: [id])
+  categoryId  Int
+  saleItems   SaleItem[]
+  createdAt   DateTime        @default(now())
+}
+
+model Sale {
+  id           Int         @id @default(autoincrement())
+  employee     Employee?   @relation(fields: [employeeId], references: [id])
+  employeeId   Int?
+  shift        Shift?      @relation(fields: [shiftId], references: [id])
+  shiftId      Int?
+  paymentType  PaymentType
+  totalAmount  Float
+  createdAt    DateTime    @default(now())
+  items        SaleItem[]
+}
+
+model SaleItem {
+  id         Int      @id @default(autoincrement())
+  sale       Sale     @relation(fields: [saleId], references: [id])
+  saleId     Int
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  Int
+  quantity   Int
+  unitPrice  Float
+  lineTotal  Float
+}
