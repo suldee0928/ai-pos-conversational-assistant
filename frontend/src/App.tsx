@@ -12,6 +12,7 @@ type ChatResponse = {
     type: string;
     data: unknown;
   };
+  reply?: string;
   error?: string;
 };
 
@@ -60,27 +61,13 @@ function App() {
         return;
       }
 
-      let replyText = "Request processed.";
-      if (data.result?.type === "REVENUE") {
-          replyText = `Revenue: ${data.result.data}`;
-            } else if (data.result?.type === "CURRENT_SHIFTS") {
-    const shifts = Array.isArray(data.result.data) ? data.result.data : [];
 
-  if (shifts.length === 0) {
-    replyText = "No employees are currently on shift.";
-      } else {
-        const names = shifts.map((shift: any) => shift.employee?.name ?? "Unknown").join(", ");
-
-    replyText = `Currently working: ${names}`;
-  }
-} else if (data.result?.type === "COMPARE_REVENUE") {
-  const compare = data.result.data as any;
-  replyText = `Comparison — Period A: ${compare.periodA}, Period B: ${compare.periodB}`;
-}
 
       const meta = data.intent
         ? `Intent: ${data.intent.intent} | Confidence: ${data.intent.confidence}`
         : undefined;
+        
+        const replyText = data.reply ?? "Request processed.";
 
       setMessages((prev) => [
         ...prev,

@@ -77,3 +77,8 @@ model SaleItem {
   unitPrice  Float
   lineTotal  Float
 }
+
+generator erd {
+  provider = "prisma-erd-generator"
+  output   = "./ERD.svg"
+}
