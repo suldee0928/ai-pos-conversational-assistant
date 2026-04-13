@@ -16,26 +16,57 @@ type Intent = {
 type QueryResult =
   | {
       type: "REVENUE";
-      data: number;
+      data:
+        | number
+        | {
+            date: string;
+            revenue: number;
+          };
     }
   | {
       type: "CURRENT_SHIFTS";
-      data: Array<{
-        id: number;
-        startTime: string;
-        endTime: string | null;
-        employee?: {
-          id: number;
-          name: string;
-          role: string;
-        } | null;
-      }>;
+      data:
+        | Array<{
+            id: number;
+            startTime: string | Date;
+            endTime: string | Date | null;
+            employee?: {
+              id: number;
+              name: string;
+              role: string;
+            } | null;
+          }>
+        | {
+            at: string;
+            shifts: Array<{
+              id: number;
+              startTime: string | Date;
+              endTime: string | Date | null;
+              employee?: {
+                id: number;
+                name: string;
+                role: string;
+              } | null;
+            }>;
+          };
     }
   | {
       type: "COMPARE_REVENUE";
       data: {
-        periodA: number;
-        periodB: number;
+        periodA:
+          | number
+          | {
+              from: string;
+              to: string;
+              revenue: number;
+            };
+        periodB:
+          | number
+          | {
+              from: string;
+              to: string;
+              revenue: number;
+            };
       };
     };
 
@@ -55,17 +86,21 @@ export function formatAssistantResponse(
   result: QueryResult
 ): string {
   if (result.type === "REVENUE") {
-    const dateText = formatSingleDate(intent.parameters.date);
+    const revenueData =
+      typeof result.data === "number"
+        ? { date: intent.parameters.date, revenue: result.data }
+        : result.data;
+    const dateText = formatSingleDate(revenueData.date ?? intent.parameters.date);
 
-    if (result.data === 0) {
+    if (revenueData.revenue === 0) {
       return `No revenue was recorded on ${dateText}.`;
     }
 
-    return `Revenue on ${dateText} was ${result.data}.`;
+    return `Revenue on ${dateText} was ${revenueData.revenue}.`;
   }
 
   if (result.type === "CURRENT_SHIFTS") {
-    const shifts = result.data ?? [];
+    const shifts = Array.isArray(result.data) ? result.data : result.data.shifts;
 
     if (shifts.length === 0) {
       return "No employees are currently on shift.";
@@ -79,16 +114,25 @@ export function formatAssistantResponse(
   }
 
   if (result.type === "COMPARE_REVENUE") {
-    const periodAText = formatDateRange(
-      intent.parameters.a_from,
-      intent.parameters.a_to
-    );
-    const periodBText = formatDateRange(
-      intent.parameters.b_from,
-      intent.parameters.b_to
-    );
+    const periodAValue =
+      typeof result.data.periodA === "number"
+        ? result.data.periodA
+        : result.data.periodA.revenue;
+    const periodBValue =
+      typeof result.data.periodB === "number"
+        ? result.data.periodB
+        : result.data.periodB.revenue;
 
-    return `Revenue comparison: ${periodAText} = ${result.data.periodA}, ${periodBText} = ${result.data.periodB}.`;
+    const periodAText =
+      typeof result.data.periodA === "number"
+        ? formatDateRange(intent.parameters.a_from, intent.parameters.a_to)
+        : formatDateRange(result.data.periodA.from, result.data.periodA.to);
+    const periodBText =
+      typeof result.data.periodB === "number"
+        ? formatDateRange(intent.parameters.b_from, intent.parameters.b_to)
+        : formatDateRange(result.data.periodB.from, result.data.periodB.to);
+
+    return `Revenue comparison: ${periodAText} = ${periodAValue}, ${periodBText} = ${periodBValue}.`;
   }
 
   return "The request was processed successfully.";

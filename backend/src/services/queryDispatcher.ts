@@ -1,30 +1,35 @@
 import { IntentType } from "../domain/intentTypes";
-import { getDailyRevenue, compareRevenuePeriods } from "../repositories/revenueRepository";
-import { getCurrentShifts } from "../repositories/shiftRepository";
+import {
+  queryCurrentShifts,
+  queryDailyRevenue,
+  queryRevenueComparison
+} from "./posQueries";
 
 export async function dispatchQuery(intent: any) {
   switch (intent.intent) {
     case IntentType.GET_DAILY_REVENUE:
       return {
-        type: "REVENUE",
-        data: await getDailyRevenue(intent.parameters.date)
+        type: "REVENUE" as const,
+        data: await queryDailyRevenue({ date: String(intent.parameters.date) })
       };
 
     case IntentType.GET_CURRENT_SHIFTS:
       return {
-        type: "CURRENT_SHIFTS",
-        data: await getCurrentShifts(intent.parameters.at ?? new Date().toISOString())
+        type: "CURRENT_SHIFTS" as const,
+        data: await queryCurrentShifts({
+          at: String(intent.parameters.at ?? new Date().toISOString())
+        })
       };
 
     case IntentType.COMPARE_REVENUE_PERIODS:
       return {
-        type: "COMPARE_REVENUE",
-        data: await compareRevenuePeriods(
-          intent.parameters.a_from,
-          intent.parameters.a_to,
-          intent.parameters.b_from,
-          intent.parameters.b_to
-        )
+        type: "COMPARE_REVENUE" as const,
+        data: await queryRevenueComparison({
+          a_from: String(intent.parameters.a_from),
+          a_to: String(intent.parameters.a_to),
+          b_from: String(intent.parameters.b_from),
+          b_to: String(intent.parameters.b_to)
+        })
       };
 
     default:

@@ -1,5 +1,18 @@
 import { prisma } from "../lib/prisma";
 
+function utcDayRange(date: string): { start: Date; endExclusive: Date } {
+  const start = new Date(`${date}T00:00:00.000Z`);
+  const endExclusive = new Date(start);
+  endExclusive.setUTCDate(endExclusive.getUTCDate() + 1);
+  return { start, endExclusive };
+}
+
+function asNumber(value: unknown): number {
+  if (typeof value === "number") return value;
+  if (value === null || value === undefined) return 0;
+  return Number(value);
+}
+
 export async function getCurrentShifts(at: string) {
   const currentTime = new Date(at);
 
@@ -24,21 +37,19 @@ export async function getCurrentShifts(at: string) {
 }
 
 export async function getDailyRevenue(date: string): Promise<number> {
-  const start = new Date(date);
-  const end = new Date(date);
-  end.setDate(end.getDate() + 1);
+  const { start, endExclusive } = utcDayRange(date);
 
   const result = await prisma.sale.aggregate({
     _sum: { totalAmount: true },
     where: {
       createdAt: {
         gte: start,
-        lt: end
+        lt: endExclusive
       }
     }
   });
 
-  return result._sum.totalAmount ?? 0;
+  return asNumber(result._sum.totalAmount);
 }
 
 export async function compareRevenuePeriods(
@@ -47,20 +58,18 @@ export async function compareRevenuePeriods(
   b_from: string,
   b_to: string
 ) {
-  const aStart = new Date(a_from);
-  const aEnd = new Date(a_to);
-  aEnd.setDate(aEnd.getDate() + 1);
+  const { start: aStart } = utcDayRange(a_from);
+  const { endExclusive: aEndFromTo } = utcDayRange(a_to);
 
-  const bStart = new Date(b_from);
-  const bEnd = new Date(b_to);
-  bEnd.setDate(bEnd.getDate() + 1);
+  const { start: bStart } = utcDayRange(b_from);
+  const { endExclusive: bEnd } = utcDayRange(b_to);
 
   const aResult = await prisma.sale.aggregate({
     _sum: { totalAmount: true },
     where: {
       createdAt: {
         gte: aStart,
-        lt: aEnd
+        lt: aEndFromTo
       }
     }
   });
@@ -76,7 +85,7 @@ export async function compareRevenuePeriods(
   });
 
   return {
-    periodA: aResult._sum.totalAmount ?? 0,
-    periodB: bResult._sum.totalAmount ?? 0
+    periodA: asNumber(aResult._sum.totalAmount),
+    periodB: asNumber(bResult._sum.totalAmount)
   };
 }

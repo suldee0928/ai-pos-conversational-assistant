@@ -35,6 +35,8 @@ model Shift {
   startTime  DateTime
   endTime    DateTime?
   sales      Sale[]
+
+  @@index([startTime, endTime])
 }
 
 model ProductCategory {
@@ -47,7 +49,7 @@ model Product {
   id          Int             @id @default(autoincrement())
   name        String
   sku         String          @unique
-  price       Float
+  price       Decimal         @db.Decimal(10, 2)
   stock       Int
   category    ProductCategory @relation(fields: [categoryId], references: [id])
   categoryId  Int
@@ -62,9 +64,12 @@ model Sale {
   shift        Shift?      @relation(fields: [shiftId], references: [id])
   shiftId      Int?
   paymentType  PaymentType
-  totalAmount  Float
+  totalAmount  Decimal     @db.Decimal(12, 2)
   createdAt    DateTime    @default(now())
   items        SaleItem[]
+
+  @@index([createdAt])
+  @@index([employeeId, createdAt])
 }
 
 model SaleItem {
@@ -74,8 +79,11 @@ model SaleItem {
   product    Product  @relation(fields: [productId], references: [id])
   productId  Int
   quantity   Int
-  unitPrice  Float
-  lineTotal  Float
+  unitPrice  Decimal  @db.Decimal(10, 2)
+  lineTotal  Decimal  @db.Decimal(12, 2)
+
+  @@index([saleId])
+  @@index([productId])
 }
 
 generator erd {

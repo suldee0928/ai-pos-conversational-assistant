@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "pos-mcp": {
+      "command": "npm",
+      "args": ["run", "mcp:dev"],
+      "cwd": "D:/thesis/ai-pos-conversational-assistant/ai-pos-conversational-assistant/backend"
+    }
+  }
+}

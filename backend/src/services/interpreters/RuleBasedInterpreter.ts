@@ -1,7 +1,7 @@
 import { IntentType } from "../../domain/intentTypes";
 import { IntentInterpreter, SessionContextInput, StructuredIntent } from "./types";
 
-function emptyParameters() {
+function emptyParameters(): StructuredIntent["parameters"] {
   return {
     date: null,
     at: null,

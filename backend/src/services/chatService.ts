@@ -8,11 +8,18 @@ import { IntentType } from "../domain/intentTypes";
 function shiftIsoDate(isoDate: string, days: number): string {
   const d = new Date(`${isoDate}T00:00:00`);
   d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
+  return formatLocalDate(d);
 }
 
 function todayIso(): string {
-  return new Date().toISOString().slice(0, 10);
+  return formatLocalDate(new Date());
+}
+
+function formatLocalDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
 }
 
 function resolveRelativeDate(value: string | null): string | null {

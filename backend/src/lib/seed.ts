@@ -138,7 +138,7 @@ async function main() {
   });
 
   // ---------------------------
-  // 7 days of shifts + sales
+  // 60 days of shifts + sales
   // ---------------------------
   const employees = [alice, bob];
   const products = {
@@ -152,14 +152,15 @@ async function main() {
     bread
   };
 
-  for (let dayOffset = 6; dayOffset >= 0; dayOffset--) {
+  const seedDays = 60;
+
+  for (let dayOffset = seedDays - 1; dayOffset >= 0; dayOffset--) {
     const baseDay = daysAgo(dayOffset);
 
     const cashier = employees[dayOffset % employees.length];
 
     const shiftStart = atTime(baseDay, 9, 0);
-    const shiftEnd =
-      dayOffset === 0 ? null : atTime(baseDay, 17, 0); // current day stays active
+    const shiftEnd = dayOffset === 0 ? null : atTime(baseDay, 17, 0); // current day stays active
 
     const shift = await prisma.shift.create({
       data: {
@@ -173,7 +174,7 @@ async function main() {
     const sale1Items = [
       {
         productId: products.cola.id,
-        quantity: 2 + (dayOffset % 2),
+        quantity: 2 + (dayOffset % 3),
         unitPrice: 2.5
       },
       {
@@ -212,7 +213,7 @@ async function main() {
     const sale2Items = [
       {
         productId: products.sandwich.id,
-        quantity: 1 + (dayOffset % 3 === 0 ? 1 : 0),
+        quantity: 1 + (dayOffset % 4 === 0 ? 1 : 0),
         unitPrice: 5.0
       },
       {

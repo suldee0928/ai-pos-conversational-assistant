@@ -13,7 +13,7 @@ export type StructuredIntent = {
   confidence: number;
 };
 
-function emptyParameters() {
+function emptyParameters(): StructuredIntent["parameters"] {
   return {
     date: null,
     at: null,
@@ -88,6 +88,19 @@ export async function interpretMessage(
         confidence: 0.9
       };
     }
+    return {
+      intent: IntentType.COMPARE_REVENUE_PERIODS,
+      parameters: {
+        ...params,
+        a_from: "2026-03-05",
+        a_to: "2026-03-05",
+        b_from: "2026-03-06",
+        b_to: "2026-03-06"
+      },
+      confidence: 0.75
+    };
+  }
+
   if (
     lower.includes("revenue") ||
     lower.includes("sales total") ||
@@ -114,21 +127,6 @@ export async function interpretMessage(
       intent: IntentType.GET_CURRENT_SHIFTS,
       parameters: params,
       confidence: 0.95
-    };
-  }
-
-
-
-    return {
-      intent: IntentType.COMPARE_REVENUE_PERIODS,
-      parameters: {
-        ...params,
-        a_from: "2026-03-05",
-        a_to: "2026-03-05",
-        b_from: "2026-03-06",
-        b_to: "2026-03-06"
-      },
-      confidence: 0.75
     };
   }
 
