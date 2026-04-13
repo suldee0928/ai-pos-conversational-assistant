@@ -19,4 +19,19 @@ export function validateIntent(intent: Intent): void {
   if (intent.intent === IntentType.GET_DAILY_REVENUE && !intent.parameters?.date) {
     throw new Error("Missing required parameter: date");
   }
+
+  if (intent.intent === IntentType.COMPARE_REVENUE_PERIODS) {
+    const required = [
+      "currentStartDate",
+      "currentEndDate",
+      "previousStartDate",
+      "previousEndDate"
+    ] as const;
+
+    for (const key of required) {
+      if (!intent.parameters?.[key]) {
+        throw new Error(`Missing required parameter: ${key}`);
+      }
+    }
+  }
 }
