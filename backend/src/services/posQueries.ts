@@ -1,4 +1,11 @@
+// Entry point for MCP and chat: validates inputs via Zod, delegates execution to repositories.
 import { z } from "zod";
+import {
+  getEmployeeSalesTotals,
+  getLowStockProducts,
+  getRevenueByPaymentForDay,
+  getTopProductsByRevenue
+} from "../repositories/analyticsRepository";
 import {
   compareRevenuePeriods as compareRevenuePeriodsRepo,
   getDailyRevenue
@@ -21,6 +28,26 @@ export const compareRevenueInputSchema = z.object({
   a_to: isoDateSchema,
   b_from: isoDateSchema,
   b_to: isoDateSchema
+});
+
+export const revenueByPaymentInputSchema = z.object({
+  date: isoDateSchema
+});
+
+export const topProductsInputSchema = z.object({
+  a_from: isoDateSchema,
+  a_to: isoDateSchema,
+  limit: z.number().int().min(1).max(50).optional()
+});
+
+export const employeeSalesInputSchema = z.object({
+  a_from: isoDateSchema,
+  a_to: isoDateSchema
+});
+
+export const lowStockInputSchema = z.object({
+  threshold: z.number().int().min(0).max(1_000_000).optional(),
+  limit: z.number().int().min(1).max(100).optional()
 });
 
 export async function queryDailyRevenue(input: z.infer<typeof dailyRevenueInputSchema>) {
@@ -62,5 +89,48 @@ export async function queryRevenueComparison(input: z.infer<typeof compareRevenu
       revenue: comparison.periodB
     },
     difference: comparison.periodA - comparison.periodB
+  };
+}
+
+export async function queryRevenueByPayment(input: z.infer<typeof revenueByPaymentInputSchema>) {
+  const parsed = revenueByPaymentInputSchema.parse(input);
+  const breakdown = await getRevenueByPaymentForDay(parsed.date);
+  return {
+    date: parsed.date,
+    breakdown
+  };
+}
+
+export async function queryTopProducts(input: z.infer<typeof topProductsInputSchema>) {
+  const parsed = topProductsInputSchema.parse(input);
+  const limit = parsed.limit ?? 5;
+  const products = await getTopProductsByRevenue(parsed.a_from, parsed.a_to, limit);
+  return {
+    from: parsed.a_from,
+    to: parsed.a_to,
+    limit,
+    products
+  };
+}
+
+export async function queryEmployeeSales(input: z.infer<typeof employeeSalesInputSchema>) {
+  const parsed = employeeSalesInputSchema.parse(input);
+  const employees = await getEmployeeSalesTotals(parsed.a_from, parsed.a_to);
+  return {
+    from: parsed.a_from,
+    to: parsed.a_to,
+    employees
+  };
+}
+
+export async function queryLowStock(input: z.infer<typeof lowStockInputSchema>) {
+  const parsed = lowStockInputSchema.parse(input);
+  const threshold = parsed.threshold ?? 10;
+  const limit = parsed.limit ?? 15;
+  const products = await getLowStockProducts(threshold, limit);
+  return {
+    threshold,
+    limit,
+    products
   };
 }

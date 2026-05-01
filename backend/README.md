@@ -19,9 +19,9 @@ Backend:
 - Prisma ORM
 - PostgreSQL
 
-AI Layer:
-- Structured intent parsing
-- Future integration with LLM APIs
+AI layer:
+- Rule-based intents and optional OpenAI structured-output interpreter
+- Guarded tooling (MCP-style) and analytic SQL helpers — see repo root README
 
 ## Example Query
 
@@ -33,7 +33,18 @@ POST /chat
   "confidence": 0.95
 }
 
+## Setup
+
+Copy `.env.example` to `.env` and set `DATABASE_URL` and `OPENAI_API_KEY`.
+
+Optional: `USE_LLM_REPLY=true` (default in `.env.example`) runs a **second** OpenAI call that phrases the answer in natural language using **only** the structured query result (grounded reply). Set `USE_LLM_REPLY=false` to use deterministic templates only.
+
+## Tests
+
+```bash
+npm test
+```
+
 ## Status
 
-Prototype backend implemented.
-Next steps include natural language interpretation and conversational context management.
+Prototype backend implemented: LLM structured-output interpreter, session context, optional MCP dispatch, middleware (rate limiting / optional API key), Vitest suites.

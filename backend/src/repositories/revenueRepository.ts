@@ -1,3 +1,4 @@
+// Daily revenue lookups and pairwise period comparisons sourced from persisted sales rows.
 import { prisma } from "../lib/prisma";
 
 function utcDayRange(date: string): { start: Date; endExclusive: Date } {

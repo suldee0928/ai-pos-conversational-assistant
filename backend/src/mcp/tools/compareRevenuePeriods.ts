@@ -24,7 +24,12 @@ export function registerCompareRevenuePeriodsTool(server: McpServer) {
     async (params) =>
       runTool(toolName, params, async () => {
         const input = schema.parse(params);
-        return queryRevenueComparison(input);
+        const result = await queryRevenueComparison(input);
+        const reply = `Revenue comparison: ${result.periodA.from} to ${result.periodA.to} = ${result.periodA.revenue}, ${result.periodB.from} to ${result.periodB.to} = ${result.periodB.revenue}.`;
+        return {
+          ...result,
+          reply
+        };
       })
   );
 }

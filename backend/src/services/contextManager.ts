@@ -7,10 +7,13 @@ export type SessionContext = {
     a_to: string | null;
     b_from: string | null;
     b_to: string | null;
+    limit: string | null;
+    threshold: string | null;
   };
   lastResult?: unknown;
 };
 
+// Ephemeral session state; suitable for development and single-node deployments only.
 const sessionStore = new Map<string, SessionContext>();
 
 export function getSessionContext(sessionId: string): SessionContext {

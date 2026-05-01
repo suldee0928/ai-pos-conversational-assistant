@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { processChat } from "../services/chatService";
 
+// Validates the request payload and exposes processChat responses as JSON.
 export const handleChat = async (req: Request, res: Response) => {
   try {
     const { sessionId, message } = req.body;

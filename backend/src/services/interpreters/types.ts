@@ -9,6 +9,10 @@ export type StructuredIntent = {
     a_to: string | null;
     b_from: string | null;
     b_to: string | null;
+    /** Max rows / top-N (numeric string), e.g. "5" */
+    limit: string | null;
+    /** Stock threshold for low-stock queries (numeric string), e.g. "10" */
+    threshold: string | null;
   };
   confidence: number;
 };

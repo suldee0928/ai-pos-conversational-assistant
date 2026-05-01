@@ -1,11 +1,7 @@
 import { IntentInterpreter } from "./types";
-import { RuleBasedInterpreter } from "./RuleBasedInterpreter";
 import { OpenAIInterpreter } from "./OpenAIInterpreter";
 
+// OpenAI interpreter with structured output; OPENAI_API_KEY is required when this module initializes.
 export function getInterpreter(): IntentInterpreter {
-  if (process.env.USE_LLM === "true") {
-    return new OpenAIInterpreter();
-  }
-
-  return new RuleBasedInterpreter();
+  return new OpenAIInterpreter();
 }

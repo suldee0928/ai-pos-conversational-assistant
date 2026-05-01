@@ -4,3 +4,19 @@ backend/node_modules
 frontend/node_modules
 dist
 
+# Local IDE / MCP configuration (often machine-specific)
+.cursor/
+
+# Unrelated coursework extract (large; keep out of the thesis repo remote)
+_prof_mcp_sudoku_extract/
+
+# Local submission mirrors / zips — regenerate before hand-in (not versioned here)
+submission/
+
+# Thesis / design artefacts — kept locally only (not pushed to GitHub)
+docs/
+
+# Word / editor temp files
+**/~*.tmp
+**/~$*
+

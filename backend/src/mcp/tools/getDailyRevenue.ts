@@ -18,7 +18,15 @@ export function registerGetDailyRevenueTool(server: McpServer) {
     async (params) =>
       runTool(toolName, params, async () => {
         const input = schema.parse(params);
-        return queryDailyRevenue(input);
+        const result = await queryDailyRevenue(input);
+        const reply =
+          result.revenue === 0
+            ? `No revenue was recorded on ${result.date}.`
+            : `Revenue on ${result.date} was ${result.revenue}.`;
+        return {
+          ...result,
+          reply
+        };
       })
   );
 }

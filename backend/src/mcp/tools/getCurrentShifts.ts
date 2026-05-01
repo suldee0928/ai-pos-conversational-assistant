@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import { runTool } from "../helpers";
 import { queryCurrentShifts } from "../../services/posQueries";
+import { formatShiftQueryReply } from "../../services/shiftReply";
 
 const toolName = "get_current_shifts";
 const schema = z.object({
@@ -18,7 +19,12 @@ export function registerGetCurrentShiftsTool(server: McpServer) {
     async (params) =>
       runTool(toolName, params, async () => {
         const input = schema.parse(params);
-        return queryCurrentShifts(input);
+        const result = await queryCurrentShifts(input);
+        const reply = formatShiftQueryReply(result.at, result.shifts);
+        return {
+          ...result,
+          reply
+        };
       })
   );
 }

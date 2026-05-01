@@ -1,3 +1,4 @@
+// MCP implementation (thesis): developed with Cursor (IDE AI); the author reviewed, adapted, and tested all behaviour — see Declaration on AI tools.
 import { z } from "zod";
 import { McpErrorEnvelope } from "./types";
 

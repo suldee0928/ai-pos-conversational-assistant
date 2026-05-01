@@ -1,121 +1,114 @@
-# AI-Powered POS Conversational Assistant
+# AI-powered POS conversational assistant
 
-This project implements a prototype system that allows users to query Point-of-Sale (POS) data using natural language through a conversational interface.
+Bachelor thesis prototype: a web chat frontend talks to an Express API that resolves natural-language questions against a PostgreSQL POS-style schema using **rule-based intents**, optionally **OpenAI structured outputs**, and an optional **Model Context Protocol (MCP)** tool path (`direct` vs `mcp`). Session context enables short follow-ups (e.g. “what about yesterday?”).
 
-The system combines structured data retrieval with intent interpretation and context-aware query handling.
+## Features
 
----
+- Chat UI (`frontend`) backed by REST (`backend`)
+- Intent validation, dispatch to repositories / analytics SQL, humane reply formatting
+- Optional MCP stdio client for tooling experiments; HTTP JSON-RPC surface for MCP-style calls where implemented
+- Prisma-managed schema, migrations, and seed (`backend/prisma`, `backend/src/lib/seed.ts`)
+- Automated tests via Vitest (backend + frontend)
 
-## 🚀 Features
+## Repository layout
 
-- Natural language query interface (chat-based)
-- Structured intent extraction (rule-based with optional LLM integration)
-- Context-aware follow-up queries (session memory)
-- Revenue aggregation and comparison
-- Current employee shift detection
-- Layered backend architecture (clean separation of concerns)
-- PostgreSQL database with Prisma ORM
-- Simple React-based chat UI
+| Path | Contents |
+|------|----------|
+| `backend/` | API, interpreters, MCP wiring, middleware, repositories, tests |
+| `frontend/` | Vite + React chat client |
+| `docs/` | **Not tracked in Git** — thesis, figures, PDFs only on your disk (ZIP them for Neptun yourself) |
+| `submission/` | **Not tracked in Git** — local mirrors / ZIPs you build for thesis hand-ins (recreate anytime) |
 
----
+## Prerequisites
 
-## 🏗️ System Architecture
+- Node.js LTS (18+ recommended)
+- PostgreSQL reachable from `DATABASE_URL`
+- OpenAI API key if you enable LLM intent interpretation / grounded replies (`backend/.env.example`)
 
-The system follows a client–server architecture:
+## Environment
 
-- **Frontend**: React-based chat interface
-- **Backend**: Node.js + TypeScript REST API
-- **Database**: PostgreSQL (relational POS model)
-- **AI Layer**:
-  - Rule-based intent parsing (current)
-  - Structured LLM integration (planned)
+**Backend.** Copy [`backend/.env.example`](backend/.env.example) to `backend/.env` and set at least:
 
----
+- `DATABASE_URL`
+- `OPENAI_API_KEY` (when using the OpenAI interpreter or NL-SQL helpers)
 
-## 📁 Project Structure
-ai-pos-conversational-assistant/
-│
-├── backend/ # API, business logic, database access
-├── frontend/ # React chat interface
-├── docs/ # diagrams and thesis materials (for later)
+Never commit `.env`.
 
+**Frontend.** Copy [`frontend/.env.example`](frontend/.env.example) to `frontend/.env` or `.env.local` if you override the API base URL, chat API key, or UI MCP badge (`VITE_*` variables).
 
----
+## Run locally
 
-## 💬 Example Queries
+From the repo root (after installs):
 
-- "How much revenue did we make on 2026-03-06?"
-- "What about yesterday?"
-- "Who is working right now?"
-- "Compare revenue between 2026-03-05 and 2026-03-06"
-
----
-
-## 🔄 Example API Request
-
-
-
-## ⚙️ Tech Stack
-
-### Backend
-- Node.js
-- TypeScript
-- Express
-- Prisma ORM
-- PostgreSQL
-- Zod (validation)
-
-### Frontend
-- React
-- TypeScript
-- Vite
-
-### AI / Logic Layer
-- Rule-based intent classification
-- Structured intent schema
-- Optional LLM integration (OpenAI)
-
----
-
-## ▶️ Running the Project
-
-### Backend
 ```bash
-cd backend
-npm install
-npm run dev
-cd frontend
-npm install
-npm run dev
+npm install --prefix backend && npm install --prefix frontend
 ```
 
-📊 Current Status
+Terminal 1 — API (default http://localhost:3000):
 
-Backend API implemented
-Database schema and seed data implemented
-Conversational flow with session context working
+```bash
+npm run dev:backend
+```
 
-Core features:
-Revenue queries
-Follow-up queries
-Current shifts
-Revenue comparison
-Frontend chat UI implemented
+Terminal 2 — UI:
 
+```bash
+npm run dev:frontend
+```
 
-🔮 Future Work
+Apply schema and seed (from `backend/`):
 
-LLM-based intent extraction (structured outputs)
-Improved natural language understanding
-Authentication and role-based access
-Real-time POS integration (concurrency handling)
-Advanced analytics queries
+```bash
+cd backend
+npx prisma migrate deploy
+npx prisma db seed
+```
 
-🎓 Thesis Context
+## Tests & builds
 
-This project is developed as part of a BSc thesis and demonstrates:
-Object-Oriented Design
-Layered architecture
-Database modelling and querying
-Conversational system design
-Integration of AI components into software systems
+```bash
+npm run test
+npm run build:backend
+npm run build:frontend
+```
+
+CI runs these via [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
+
+## Execution modes (`CHAT_EXECUTION_MODE`)
+
+- **`direct`** (default in `.env.example`): handlers run in-process.
+- **`mcp`**: requests can be delegated to an MCP subprocess; configure `MCP_CLIENT_*` in `backend/.env.example` when you use this mode.
+
+## Example `/chat` body (validated intent)
+
+The production path expects user text plus session id from the UI; internally the server may classify to something like:
+
+```json
+POST /chat
+Content-Type: application/json
+
+{
+  "message": "How much revenue on 2026-03-06?",
+  "sessionId": "demo-session-1"
+}
+```
+
+(Response shape follows the formatter in `backend`; direct JSON intents are exercised in tests.)
+
+## Example natural-language prompts
+
+- “How much revenue did we make on 2026-03-06?”
+- “What about yesterday?”
+- “Who is working right now?”
+- “Compare revenue between 2026-03-05 and 2026-03-06.”
+- Revenue by payment type, top products, employee sales, low-stock queries (subject to implemented tools / allow-list).
+
+## Tech stack
+
+- **Backend:** Node.js, TypeScript, Express, Prisma, PostgreSQL, Zod, Vitest  
+- **Frontend:** React, TypeScript, Vite, Vitest + Testing Library  
+- **Optional AI:** OpenAI (structured intents, grounded replies, guarded NL-SQL pathway where enabled)
+
+## Thesis context
+
+Implements layered design, conversational state, database modelling, and integration of constrained LLM behaviour suitable for analytical POS scenarios.

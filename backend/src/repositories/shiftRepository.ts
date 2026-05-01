@@ -1,3 +1,4 @@
+// Returns shifts active at timestamp `at` (start/end window overlap semantics).
 import { prisma } from "../lib/prisma";
 
 export async function getCurrentShifts(at: string) {
